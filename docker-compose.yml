@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+
+  db:
+    image: postgres:14.5
+    container_name: pg_database
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app -d database" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+    env_file:
+      - .env
+
+  api:
+    container_name: api
+    build:
+      context: .
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
